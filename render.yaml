@@ -1,0 +1,27 @@
+# پیکربندی Render برای سرویس حذف پس‌زمینه (پلن رایگان، ۵۱۲ مگ رم)
+#
+# روش دیپلوی: Render → Blueprint → اتصال به مخزن گیت‌هاب → این فایل خوانده می‌شود.
+services:
+  - type: web
+    name: pcmo-bg
+    runtime: python
+    plan: free
+    region: frankfurt
+    healthCheckPath: /health
+    buildCommand: |
+      pip install --upgrade pip
+      pip install -r requirements.txt
+      mkdir -p models
+      curl -L --retry 3 -o models/silueta.onnx https://github.com/danielgatis/rembg/releases/download/v0.0.0/silueta.onnx
+      curl -L --retry 3 -o models/u2netp.onnx https://github.com/danielgatis/rembg/releases/download/v0.0.0/u2netp.onnx
+      ls -la models/
+    startCommand: uvicorn app:app --host 0.0.0.0 --port $PORT --workers 1
+    envVars:
+      - key: PCMO_TOKEN
+        sync: false
+      - key: PCMO_MODEL
+        value: silueta
+      - key: PCMO_THREADS
+        value: "2"
+      - key: PYTHON_VERSION
+        value: "3.11.9"
